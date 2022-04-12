@@ -68,7 +68,7 @@ function check(options: ManagerOptions) {
     typeof options.clientName !== "string"
   )
     throw new TypeError('Manager option "clientName" must be a string.');
-  
+
   if (
     typeof options.defaultSearchPlatform !== "undefined" &&
     typeof options.defaultSearchPlatform !== "string"
@@ -256,6 +256,46 @@ export class Manager extends EventEmitter {
       });
   }
 
+  /** Returns the Node in same voice channel as the player.
+   * @param region
+   */
+  public nearestNode(region: string): Node {
+    const nodes = this.nodes
+      .filter((node) => {
+        if (!node.options.region)
+          return node.connected
+        else if (Array.isArray(node.options.region))
+          return node.connected && node.options.region.includes(region)
+        else
+          return node.connected && node.options.region.toLowerCase() == region.toLowerCase()
+      });
+
+    if (!nodes)
+      return null;
+    else if (nodes.size === 1)
+      return nodes.first();
+    else if (nodes.size > 1)
+      return this.leastLoadNodesByRegion(nodes).first();
+  }
+
+  /**
+    * Returns the least system load Nodes from provided Nodes.
+    * @param nodes
+    */
+  public leastLoadNodesByRegion(nodes: Collection<string, Node>): Collection<string, Node> {
+    return nodes
+      .filter((node) => node.connected)
+      .sort((a, b) => {
+        const aload = a.stats.cpu
+          ? (a.stats.cpu.systemLoad / a.stats.cpu.cores) * 100
+          : 0;
+        const bload = b.stats.cpu
+          ? (b.stats.cpu.systemLoad / b.stats.cpu.cores) * 100
+          : 0;
+        return aload - bload;
+      });
+  }
+
   /**
    * Initiates the Manager class.
    * @param options
@@ -293,7 +333,7 @@ export class Manager extends EventEmitter {
     }
 
     if (this.options.nodes) {
-      for (const nodeOptions of this.options.nodes)
+      for (const nodeOptions of this.options.nodes.values())
         new (Structure.get("Node"))(nodeOptions);
     }
   }
@@ -313,7 +353,6 @@ export class Manager extends EventEmitter {
       throw new Error(
         '"clientId" is not set. Pass it in Manager#init() or as a option in the constructor.'
       );
-
     for (const node of this.nodes.values()) {
       try {
         node.connect();
@@ -349,8 +388,8 @@ export class Manager extends EventEmitter {
       if (search.startsWith('file://')) search = search.replace('file://', '');
 
       const res = await node
-      .makeRequest<LavalinkResult>(`/loadtracks?identifier=${encodeURIComponent(search)}`)
-      .catch(err => reject(err));
+        .makeRequest<LavalinkResult>(`/loadtracks?identifier=${encodeURIComponent(search)}`)
+        .catch(err => reject(err));
 
       if (!res) {
         return reject(new Error("Query not found."));
@@ -411,7 +450,7 @@ export class Manager extends EventEmitter {
    * @param track
    */
   public async decodeTrack(track: string): Promise<TrackData> {
-    const res = await this.decodeTracks([ track ]);
+    const res = await this.decodeTracks([track]);
     return res[0];
   }
 
@@ -485,7 +524,7 @@ export class Manager extends EventEmitter {
     } else {
       /* voice state update */
       if (update.user_id !== this.options.clientId) {
-        return;      
+        return;
       }
 
       if (update.channel_id) {
