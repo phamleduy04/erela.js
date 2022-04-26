@@ -134,6 +134,39 @@ export class Player {
     this.manager.players.set(options.guild, this);
     this.manager.emit("playerCreate", this);
     this.setVolume(options.volume ?? 100);
+    if (this.manager.options.replayOnDc && this.manager.nodes.filter(x => x.connected).size > 1) {
+      try {
+        this.manager.on('nodeDisconnect', async (node) => {
+          for (const players of [...this.manager.players.filter(x => x.node === node).values()]) {
+            if (node.options.region) await players.setNode(this.manager.nearestNode(node.options.region[0]).options.identifier);
+            else await players.setNode(this.manager.leastUsedNodes.first().options.identifier);
+          }
+        })
+      } catch (error) {
+        this.manager.emit('replayError', this, error)
+      }
+    }
+  }
+
+  /**
+   * Move the player to another connected node
+   * @param name
+   */
+  async setNode(name: string): Promise<Player> {
+    if (this.node.options.identifier === name) return this;
+    const node = this.manager.nodes.get(name)
+    if (!node) throw Error('Please specify valid node name.');
+    if (!node.connected) throw Error('The node is not connected');
+    const options = {
+      op: "play",
+      guildId: this.guild,
+      track: this.queue.current.track,
+      startTime: this.position,
+    };
+    this.node = node;
+    await this.node.send(this.voiceState)
+    await this.node.send(options)
+    return this;
   }
 
   /**
@@ -157,8 +190,8 @@ export class Player {
     if (Array.isArray(bands[0])) bands = bands[0] as unknown as EqualizerBand[]
 
     if (!bands.length || !bands.every(
-        (band) => JSON.stringify(Object.keys(band).sort()) === '["band","gain"]'
-      )
+      (band) => JSON.stringify(Object.keys(band).sort()) === '["band","gain"]'
+    )
     )
       throw new TypeError("Bands must be a non-empty object array containing 'band' and 'gain' properties.");
 
@@ -306,10 +339,10 @@ export class Player {
     const finalOptions = playOptions
       ? playOptions
       : ["startTime", "endTime", "noReplace"].every((v) =>
-          Object.keys(optionsOrTrack || {}).includes(v)
-        )
-      ? (optionsOrTrack as PlayOptions)
-      : {};
+        Object.keys(optionsOrTrack || {}).includes(v)
+      )
+        ? (optionsOrTrack as PlayOptions)
+        : {};
 
     if (TrackUtils.isUnresolvedTrack(this.queue.current)) {
       try {
