@@ -330,6 +330,7 @@ export interface VoiceServer {
   token: string;
   guild_id: string;
   endpoint: string;
+  rtc_region?: string;
 }
 
 export interface VoiceState {
@@ -337,10 +338,11 @@ export interface VoiceState {
   user_id: string;
   session_id: string;
   channel_id: string;
+  rtc_region?: string
 }
 
 export interface VoicePacket {
-  t?: "VOICE_SERVER_UPDATE" | "VOICE_STATE_UPDATE";
+  t?: "VOICE_SERVER_UPDATE" | "VOICE_STATE_UPDATE" | "CHANNEL_UPDATE";
   d: VoiceState | VoiceServer;
 }
 

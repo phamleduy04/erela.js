@@ -520,8 +520,16 @@ export class Manager extends EventEmitter {
    * @param data
    */
   public updateVoiceState(data: VoicePacket | VoiceServer | VoiceState): void {
+    if ("t" in data && data.t == 'CHANNEL_UPDATE') {
+      const player = this.players.get(data.d.guild_id);
+      if (!player) return;
+      if (player.node.options.region.includes(data.d.rtc_region) || data.d.rtc_region === null) return;
+      const nearestNode = this.nearestNode(data.d.rtc_region);
+      if (nearestNode == player.node) return;
+      player.setRegion(data.d.rtc_region);
+      player.setNode(nearestNode.options.identifier);
+    }
     if ("t" in data && !["VOICE_STATE_UPDATE", "VOICE_SERVER_UPDATE"].includes(data.t)) return;
-
     const update: VoiceServer | VoiceState = "d" in data ? data.d : data;
     if (!update || !("token" in update) && !("session_id" in update)) return;
 

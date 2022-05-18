@@ -486,6 +486,15 @@ export class Player {
 
     return this;
   }
+
+  /**
+   * Set region for the player.
+   * @param region
+   */
+  public setRegion(region: string) {
+    this.region = region;
+    this.options.region = region;
+  }
 }
 
 export interface PlayerOptions {
