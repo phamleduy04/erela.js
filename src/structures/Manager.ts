@@ -525,7 +525,7 @@ export class Manager extends EventEmitter {
       if (!player) return;
       if (player.node.options.region.includes(data.d.rtc_region) || data.d.rtc_region === null) return;
       const nearestNode = this.nearestNode(data.d.rtc_region);
-      if (nearestNode == player.node) return;
+      if (nearestNode == player.node || !nearestNode.options?.identifier) return;
       player.setRegion(data.d.rtc_region);
       player.setNode(nearestNode.options.identifier);
     }
