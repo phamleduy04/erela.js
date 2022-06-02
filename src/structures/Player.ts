@@ -154,6 +154,7 @@ export class Player {
    */
   async setNode(name: string): Promise<Player> {
     if (this.node.options.identifier === name) return this;
+    if (!this.queue.current) return;
     const node = this.manager.nodes.get(name)
     if (!node) throw Error('Please specify valid node name.');
     if (!node.connected) throw Error('The node is not connected');
