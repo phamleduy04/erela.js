@@ -331,6 +331,7 @@ export interface VoiceServer {
   guild_id: string;
   endpoint: string;
   rtc_region?: string;
+  id?: string;
 }
 
 export interface VoiceState {
@@ -338,7 +339,8 @@ export interface VoiceState {
   user_id: string;
   session_id: string;
   channel_id: string;
-  rtc_region?: string
+  rtc_region?: string;
+  id?: string;
 }
 
 export interface VoicePacket {

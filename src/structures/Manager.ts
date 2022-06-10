@@ -522,10 +522,10 @@ export class Manager extends EventEmitter {
   public updateVoiceState(data: VoicePacket | VoiceServer | VoiceState): void {
     if ("t" in data && data.t == 'CHANNEL_UPDATE') {
       const player = this.players.get(data.d.guild_id);
-      if (!player) return;
-      if (player.node.options.region.includes(data.d.rtc_region) || data.d.rtc_region === null) return;
+      if (!player || data.d.id !== player.voiceChannel) return;
+      if (player.node.options?.region.includes(data.d.rtc_region) || data.d.rtc_region === null) return;
       const nearestNode = this.nearestNode(data.d.rtc_region);
-      if (nearestNode == player.node || !nearestNode.options?.identifier) return;
+      if (nearestNode == player.node || !nearestNode.options) return;
       player.setRegion(data.d.rtc_region);
       player.setNode(nearestNode.options.identifier);
     }
