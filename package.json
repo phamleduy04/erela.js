@@ -1,6 +1,6 @@
 {
   "name": "@phamleduy04/erela.js",
-  "version": "2.3.31",
+  "version": "2.3.32",
   "description": "An easy-to-use Lavalink client for NodeJS.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,7 +34,7 @@
   "repository": "MenuDocs/erela.js",
   "bugs": "https://github.com/MenuDocs/erela.js",
   "devDependencies": {
-    "@types/node": "^18.7.10",
+    "@types/node": "^18.7.13",
     "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "^5.34.0",
     "@typescript-eslint/parser": "^5.34.0",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@discordjs/collection": "^1.1.0",
-    "undici": "5.9.1",
+    "undici": "5.10.0",
     "ws": "^8.8.1"
   },
   "engines": {
